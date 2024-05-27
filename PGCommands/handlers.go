@@ -10,11 +10,12 @@ import (
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy+1); err != nil {
-			ox, oy := v.Origin()
-			if err := v.SetOrigin(ox, oy+1); err != nil {
-				return err
-			}
+		lines := v.BufferLines()
+		newCy := cy + 1
+		if newCy >= len(lines)-1 {
+			v.SetCursor(cx, 0)
+		} else {
+			v.SetCursor(cx, newCy)
 		}
 		updateDescription(g)
 	}
@@ -24,12 +25,14 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
-		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
-			if err := v.SetOrigin(ox, oy-1); err != nil {
-				return err
-			}
+		lines := v.BufferLines()
+		newCy := cy - 1
+		if newCy < 0 {
+			lastIndex := len(lines) - 2
+			v.SetCursor(cx, lastIndex)
+		} else {
+			v.SetCursor(cx, newCy)
 		}
 		updateDescription(g)
 	}
